@@ -41,14 +41,14 @@ class Block {
             
             // Save in auxiliary variable the current block hash
             var actualHash = this.hash;   
-            console.log ("Inside Block Validate, actualHash : ",actualHash);
+            //console.log ("Inside Block Validate, actualHash : ",actualHash);
             this.hash = null;                
             // Recalculate the hash of the Block
             var calculatedHash = SHA256(JSON.stringify(this)).toString();
-            console.log ("Inside Block Validate, calculatedHash : ",calculatedHash);
+            //console.log ("Inside Block Validate, calculatedHash : ",calculatedHash);
             this.hash = actualHash;
             // Comparing if the hashes changed
-            console.log ("Inside Block Validate, resettingHash : ",this.hash);
+            //console.log ("Inside Block Validate, resettingHash : ",this.hash);
             if(actualHash != calculatedHash){
             // Returning the Block is not valid
                 reject(false);
@@ -75,13 +75,13 @@ class Block {
         if (this.height >0){
             // Getting the encoded data saved in the Block
             var blockData = this.body;
-            console.log ("Inside Block Validate, Data : ",this.body, blockData);
+            //console.log ("Inside Block Validate, Data : ",this.body, blockData);
             // Decoding the data to retrieve the JSON representation of the object
-            var decodedData = hex2ascii(blockData);
-            console.log ("Inside Block Validate, decodedData : ",decodedData);
+            let decodedData = JSON.parse(hex2ascii(blockData));
+            console.log ("Inside Block Validate, decodedData : ",decodedData,hex2ascii(blockData));
             // Parse the data to an object to be retrieve.
             // Resolve with the data if the object isn't the Genesis block
-            return(blockData);
+            return(decodedData);
         }
         else{
             return("This is Genesis Block");
