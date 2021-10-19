@@ -24,8 +24,8 @@ class BlockchainController {
             if(req.params.height) {
                 const height = parseInt(req.params.height);
                 let block = await this.blockchain.getBlockByHeight(height);
-                console.log(block.hash);
-                console.log(block.previousBlockHash);
+                console.log("getByheight",block);
+                
                 if(block){
                     return res.status(200).json(block);
                 } else {
@@ -103,6 +103,7 @@ class BlockchainController {
         this.app.get("/blocks/:address", async (req, res) => {
             if(req.params.address) {
                 const address = req.params.address;
+                console.log("Calling in Blockchaincontroller : ",address);
                 try {
                     let stars = await this.blockchain.getStarsByWalletAddress(address);
                     if(stars){
