@@ -141,21 +141,11 @@ class Blockchain {
             
             let Text= '{"address":"'+address.toString()+'","message":"'+message.toString()+'","signature":"'+signature.toString()+'","star":"'+star.toString()+'"}';
             console.log(Text);
-            let block = new BlockClass.Block(JSON.parse(Text));
-
-
-            let blockAdd = await this._addBlock(block); 
-            if(blockAdd){
-                let x=block.getBData();
-                console.log(x.address,x.signature);
-                console.log("block added");
-                resolve(block);  
-              }
-            /*if((currentTime-reqsentTime)<30000){
+            if((currentTime-reqsentTime)<30000){
                 console.log("Time Diff Passed");
                 if(bitcoinMessage.verify(message, address, signature)){
                     console.log("BTC Verify Passed");
-                    let block = new BlockClass.Block({data: JSON.parse(Text)});
+                    let block = new BlockClass.Block(JSON.parse(Text));
                     let blockAdd = await this._addBlock(block); 
                     if(blockAdd){
                         console.log("block added");
@@ -172,7 +162,7 @@ class Blockchain {
             }
             else{
                 reject(false);
-            }*/
+            }
              
         }).catch(() => console.log("REJECTED"));
     }
@@ -222,14 +212,16 @@ class Blockchain {
     getStarsByWalletAddress (address) {
         let self = this;
         let stars = [];
-        console.log("Entering getbyWalletAddress");
+        //console.log("Entering getbyWalletAddress");
         return new Promise((resolve, reject) => {
+            /*Search the block chain to retrieve block that matches the adress.
+            if none of the blocks match then reject the promise*/
             for (let i = 0; i < this.chain.length; i++) {
                 let x=this.chain[i].getBData();
                 console.log("Calling in blockchain : ",x.address," ",address);
                 if(x.address==address){
                     resolve(x.star)
-                    }
+                }
             }
             reject();
         }).catch(() => console.log("REJECTED"));
@@ -266,7 +258,7 @@ class Blockchain {
                 console.log("Validate Chain Fail");
                 reject(false);
             }
-        });
+        }).catch(() => console.log("REJECTED"));
     }
 
 }
