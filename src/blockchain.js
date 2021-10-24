@@ -82,7 +82,7 @@ class Blockchain {
         let self = this;
         return new Promise(async (resolve, reject) => {
             //console.log("Chain Validation Before adding block",this.validateChain());
-            if (this.validateChain()){
+            if (await this.validateChain()){
                 block.height = this.chain.length
                 block.time = parseInt(new Date().getTime().toString().slice(0, -3));  
                 if(this.chain.length>0){
@@ -91,10 +91,10 @@ class Blockchain {
                 block.hash = SHA256(JSON.stringify(block)).toString();    
                 this.chain.push(block);
                 this.height=this.height +1;
-                resolve(true);
+                resolve(block);
             }
             else{
-                reject(false);
+                resolve("Validate Chain Failed");
             }
 
         }).catch(() => console.log("REJECTED"));
@@ -138,10 +138,12 @@ class Blockchain {
             var reqsentTime=parseInt(message.split(':')[1]);
             var currentTime=parseInt(new Date().getTime().toString().slice(0, -3));
             //console.log("Time Spent",currentTime-reqsentTime);
-            
-            let Text= '{"address":"'+address.toString()+'","message":"'+message.toString()+'","signature":"'+signature.toString()+'","star":"'+star.toString()+'"}';
+            let starText = JSON.stringify(star);
+            const Text= `{"address":"${address.toString()}","message":"${message.toString()}","signature":"${signature.toString()}","star":${starText}}`;
             console.log(Text);
-            if((currentTime-reqsentTime)<30000){
+            console.log("Time Diff :",currentTime-reqsentTime);
+            console.log("Bicoin Verify-1",bitcoinMessage.verify(message, address, signature));
+            if((currentTime-reqsentTime)<300){
                 console.log("Time Diff Passed");
                 if(bitcoinMessage.verify(message, address, signature)){
                     console.log("BTC Verify Passed");
@@ -149,7 +151,7 @@ class Blockchain {
                     let blockAdd = await this._addBlock(block); 
                     if(blockAdd){
                         console.log("block added");
-                        resolve(block);  
+                        resolve(blockAdd);  
                       }
                     else{
                           reject(false);
@@ -212,18 +214,26 @@ class Blockchain {
     getStarsByWalletAddress (address) {
         let self = this;
         let stars = [];
-        //console.log("Entering getbyWalletAddress");
+        console.log("Entering getbyWalletAddress");
         return new Promise((resolve, reject) => {
             /*Search the block chain to retrieve block that matches the adress.
             if none of the blocks match then reject the promise*/
+            var count=0;
+            console.log("Before Loop",this.chain.length);
             for (let i = 0; i < this.chain.length; i++) {
                 let x=this.chain[i].getBData();
                 console.log("Calling in blockchain : ",x.address," ",address);
                 if(x.address==address){
-                    resolve(x.star)
+                    stars[count]=x.star;
+                    count++;
                 }
             }
-            reject();
+            if(count>0){
+                resolve(stars);
+            }
+            else{
+                reject();
+            }
         }).catch(() => console.log("REJECTED"));
     }
 
@@ -241,11 +251,11 @@ class Blockchain {
             console.log("chain length : ", this.chain.length);
             for (let i = 0; i < this.chain.length; i++) {
                 console.log("validate chain count : ", i);
-                if((i==0) && (!this.chain[i].validate()) ){
+                if((i==0) && (!(await this.chain[i].validate())) ){
                     flag=false;
                     break;
                 }
-                if((i>0)&&((!this.chain[i].validate())||(this.chain[i].previousBlockHash != this.chain[i-1].hash))){
+                if((i>0)&&((!(await this.chain[i].validate()))||(this.chain[i].previousBlockHash != this.chain[i-1].hash))){
                     flag=false;
                     break;
                 }
